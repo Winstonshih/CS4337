@@ -1,0 +1,40 @@
+Type compatibility report — explicit rules and examples
+
+Summary: For each language below I list the rule (widening/narrowing, implicit/explicit), the typical compiler behavior
+and the test file lines that exercise the rule. Run the test files in `Q1/` to observe the behavior and any runtime effects.
+
+1) C (file: `Q1/test_c.c`)
+  - Numeric widening (int -> double): implicit and allowed (example: `double d = i;`).
+  - Numeric narrowing (double -> int): requires an explicit cast to avoid precision loss (`int j = (int)e;`).
+  - Pointer conversions: `T* -> void*` and `void* -> T*` are allowed implicitly in C (example: `void *pv = arr; int *pi = pv;`).
+  - Integer-to-pointer conversions are not allowed without casts and are unsafe.
+
+2) C++ (file: `Q1/test_cpp.cpp`)
+  - Numeric widening: implicit (same as C).
+  - Numeric narrowing: explicit cast required; C++ list-initialization (brace init) forbids narrowing without a cast (e.g., `int x {3.14};` is ill-formed).
+  - Pointer conversions: converting `void*` to a typed pointer requires an explicit cast in C++ (`int* pi = static_cast<int*>(pv);`).
+  - C++ is stricter than C on unsafe implicit pointer conversions and on narrowing diagnostics.
+
+3) C# (file: `Q1/test_cs.cs`)
+  - Numeric widening (int -> long): implicit (example: `long l = i;`).
+  - Numeric narrowing (long -> int): requires an explicit cast and may overflow at runtime (`int k = (int)L;`).
+  - Boxing/unboxing: value types can be boxed to `object`; unboxing must use the exact boxed type or a runtime InvalidCastException occurs (`object o = 5; int unboxed = (int)o;`).
+  - Reference conversions: upcasts are implicit, downcasts require explicit casts and can throw at runtime if types don't match.
+  - Generics are invariant by default: `List<Derived>` is not assignable to `List<Base>`. Use interfaces with declared variance (e.g., `IEnumerable<out T>`) for covariance.
+
+4) Java (file: `Q1/TestJava.java`)
+  - Numeric widening: implicit (int -> double allowed).
+  - Numeric narrowing: requires an explicit cast (double -> int).
+  - Reference conversions: upcasts implicit, downcasts explicit and may throw `ClassCastException` at runtime.
+  - Arrays are covariant: `Derived[]` can be assigned to `Base[]`, but storing an incompatible element causes `ArrayStoreException` at runtime (demonstrated in the test).
+  - Generics are invariant: `List<Derived>` cannot be assigned to `List<Base>`; use wildcards (`List<? extends Base>`) for read-only covariance.
+
+Notes and testing tips:
+  - To observe compiler diagnostics, uncomment one commented disallowed-conversion example in a test file and recompile; the compiler will produce an error or warning specific to your toolchain and language version.
+  - Use language-standard flags (e.g., `-std=c11`, `-std=c++17`) and `-Wall` to surface warnings that may otherwise be silent.
+  - Runtime exceptions (ArrayStoreException, InvalidCastException/ClassCastException) are language/runtime behaviors — compile-time checks differ from runtime checks.
+
+Conclusion: The four languages share the same basic rule for numeric conversions (widening implicit, narrowing explicit) but differ for pointers/objects and generics:
+  - C is permissive for `void*` conversions but allows unsafe operations; C++ enforces more explicit casts.
+  - C# and Java enforce type safety more strictly at compile time for generics and at runtime for arrays/boxing/unboxing.
+

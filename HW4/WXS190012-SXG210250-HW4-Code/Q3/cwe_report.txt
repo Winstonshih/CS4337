@@ -1,0 +1,17 @@
+CWE-787 (Out-of-Bounds Write): This happens when a buffer grows past its storage and clobbers nearby data.
+Remediation: addChar() now checks a small MAX_LEXEME_LENGTH value before pushing another character so the lexeme never spills.
+
+CWE-125 (Out-of-Bounds Read): Pulling bytes after the end of the file can leak junk or crash the scan loop.
+Remediation: getChar() keeps the raw int returned by ifstream and only copies it to nextChar when it is real data, so EOF is not reused accidentally.
+
+CWE-20 (Improper Input Validation): If the parser keeps going after seeing a random token, the recursive descent state falls apart.
+Remediation: statement() now calls error() whenever none of the known starting tokens match, so bad input is rejected right away.
+
+CWE-190 (Integer Overflow or Wraparound): Huge numeric literals may wrap to small negative numbers when converted to int.
+Remediation: validateIntLiteral() walks the digits one by one, multiplies by ten, and stops the program if the running value ever beats INT max.
+
+CWE-287 (Improper Authentication): This CWE covers missing identity checks, but the homework scanner never logs users in.
+Disposition: No authentication surface exists here, so nothing was changed for this item.
+
+CWE-862 (Missing Authorization): Authorization only matters after an identity is known, which again does not apply to this console parser.
+Disposition: The code does not gate privileged actions, so this CWE was documented but needed no code edits.
